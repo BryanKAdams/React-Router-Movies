@@ -1,28 +1,53 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from "react-router-dom"
 import axios from 'axios';
+
 
 const MovieList = props => {
   const [movies, setMovies] = useState([])
+  const [query, setQuery] = useState("");
   useEffect(() => {
     const getMovies = () => {
       axios
         .get('http://localhost:5000/api/movies')
         .then(response => {
-          setMovies(response.data);
+          const movies = response.data.filter(movie => movie.title.toLowerCase().includes(query.toLowerCase()))
+          setMovies(movies);
         })
         .catch(error => {
           console.error('Server Error', error);
         });
     }
-    
+
     getMovies();
-  }, []);
-  
+  }, [query]);
+
+  const handleInputChange = event => {
+    setQuery(event.target.value);
+  };
+
   return (
-    <div className="movie-list">
-      {movies.map(movie => (
-        <MovieDetails key={movie.id} movie={movie} />
-      ))}
+    <div>
+      <form className="search">
+        <input
+          type="text"
+          onChange={handleInputChange}
+          value={query}
+          name="name"
+          tabIndex="0"
+          className="prompt search-name"
+          placeholder="search by name"
+          autoComplete="off"
+        />
+      </form>
+
+      <div className="movie-list">
+        {movies.map((movie, index) => (
+          <Link key={index} to={`/movies/${movie.id}`}>
+            <MovieDetails key={index} movie={movie} />
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -40,8 +65,9 @@ function MovieDetails({ movie }) {
       </div>
       <h3>Actors</h3>
 
-      {stars.map(star => (
-        <div key={star} className="movie-star">
+
+      {stars.map((star, index) => (
+        <div key={index} className="movie-star">
           {star}
         </div>
       ))}
